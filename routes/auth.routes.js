@@ -52,13 +52,27 @@ router.post("/login", (req, res, next) => {
     });
 });
 
-router.get("/private", (req, res, next) => {
+const checkLogin = (req, res, next) => {
+  if (req.session.myProperty) {
+    //invokes the next available function
+    next();
+  } else {
+    res.redirect("/login");
+  }
+};
+
+router.get("/private", checkLogin, (req, res, next) => {
   let loggedInUser = req.session.myProperty;
   res.render("auth/private.hbs", { name: loggedInUser.username });
 });
 
+router.get("/main", checkLogin, (req, res, next) => {
+  res.render("auth/main.hbs");
+});
+
 router.get("/logout", (req, res, next) => {
-  res.redirect("auth/login.hbs");
+  req.session.destroy();
+  res.redirect("login");
 });
 
 module.exports = router;

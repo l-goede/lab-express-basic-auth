@@ -1,9 +1,13 @@
 <h2>LOGIN</h2>
-<form method="POST" action="/signin">
+<form method="POST" action="/login">
   <label>Username</label>
-  <input type="email" name="username" placeholder="Enter your Username" />
+  <input type="text" name="username" placeholder="Enter your Username" />
 
   <label>Password</label>
   <input type="password" name="password" placeholder="Enter your Password" />
   <button>Login</button>
 </form>
+
+{{#if logout}}
+  <p class="logout">Message: {{logout}}</p>
+{{/if}}
