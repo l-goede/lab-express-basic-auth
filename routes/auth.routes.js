@@ -10,18 +10,55 @@ router.post("/signup", (req, res, next) => {
   const { username, password } = req.body;
   let salt = bcrypt.genSaltSync(10);
   let hash = bcrypt.hashSync(password, salt);
-  UserModel.create({ username, password: hash });
-  then(() => {
-    res.redirect("/");
-  }).catch((err) => {
-    next(err);
-  });
+  UserModel.create({ username, password: hash })
+    .then(() => {
+      res.redirect("/");
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
 router.get("/login", (req, res, next) => {
   res.render("auth/login.hbs");
 });
 
-router.get("/logout", (req, res, next) => {
-  res.render("auth/logout.hbs");
+router.post("/login", (req, res, next) => {
+  const { username, password } = req.body;
+
+  UserModel.find({ username })
+    .then((userData) => {
+      if (userData.length) {
+        let userObj = userData[0];
+        let match = bcrypt.compareSync(password, userObj.password);
+        if (match) {
+          req.session.myProperty = userObj;
+          res.redirect("/private");
+        } else {
+          res.render("auth/login.hbs", {
+            error: "Your Password is wrong. Think twice and try again.",
+          });
+          return;
+        }
+      } else {
+        res.render("auth/login.hbs", {
+          error: "Either you typed your own name wrong or you don not exist.",
+        });
+        return;
+      }
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
+
+router.get("/private", (req, res, next) => {
+  let loggedInUser = req.session.myProperty;
+  res.render("auth/private.hbs", { name: loggedInUser.username });
+});
+
+router.get("/logout", (req, res, next) => {
+  res.redirect("auth/login.hbs");
+});
+
+module.exports = router;
